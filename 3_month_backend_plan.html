@@ -1,0 +1,547 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);font-size:14px;color:var(--color-text-primary)}
+
+.month-nav{display:flex;gap:6px;margin-bottom:16px}
+.m-btn{flex:1;padding:8px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary);color:var(--color-text-secondary);cursor:pointer;font-size:13px;font-weight:500;transition:all .15s;text-align:center}
+.m-btn:hover{background:var(--color-background-primary)}
+.m-btn.active{background:var(--color-background-primary);color:var(--color-text-primary);border-color:var(--color-border-secondary)}
+.m-btn .sub{font-size:11px;font-weight:400;color:var(--color-text-tertiary);display:block;margin-top:2px}
+
+.month{display:none}
+.month.active{display:block}
+
+.week-card{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);margin-bottom:10px;overflow:hidden;background:var(--color-background-primary)}
+.week-head{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer}
+.week-head:hover{background:var(--color-background-secondary)}
+.week-badge{font-size:11px;font-weight:500;padding:3px 9px;border-radius:99px;flex-shrink:0}
+.week-title{font-size:14px;font-weight:500;flex:1}
+.week-focus{font-size:11px;color:var(--color-text-tertiary);flex-shrink:0}
+.chevron{font-size:10px;color:var(--color-text-tertiary);margin-left:6px;transition:transform .2s}
+.week-card.open .chevron{transform:rotate(180deg)}
+.week-body{display:none;border-top:0.5px solid var(--color-border-tertiary)}
+.week-card.open .week-body{display:block}
+
+.day-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:12px 14px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.day-cell{border-radius:var(--border-radius-md);padding:6px 4px;text-align:center}
+.day-label{font-size:10px;color:var(--color-text-tertiary);margin-bottom:4px}
+.day-task{font-size:10px;color:var(--color-text-secondary);line-height:1.4}
+.day-cell.dsa{background:#E6F1FB}
+.day-cell.sd{background:#EAF3DE}
+.day-cell.node{background:#FAEEDA}
+.day-cell.review{background:#EEEDFE}
+.day-cell.rest{background:var(--color-background-secondary)}
+.day-cell.dsa .day-task{color:#0C447C}
+.day-cell.sd .day-task{color:#27500A}
+.day-cell.node .day-task{color:#633806}
+.day-cell.review .day-task{color:#3C3489}
+
+.section-block{padding:12px 14px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.section-block:last-child{border:none}
+.block-label{font-size:11px;font-weight:500;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px}
+
+.task-list{display:flex;flex-direction:column;gap:5px}
+.task-item{display:flex;align-items:flex-start;gap:8px;font-size:13px;line-height:1.5;color:var(--color-text-primary)}
+.task-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;margin-top:6px}
+.dot-dsa{background:#378ADD}
+.dot-sd{background:#639922}
+.dot-node{background:#BA7517}
+.dot-review{background:#7F77DD}
+
+.problems-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
+.prob-tag{font-size:11px;padding:2px 8px;border-radius:99px;background:var(--color-background-secondary);color:var(--color-text-secondary);border:0.5px solid var(--color-border-tertiary)}
+
+.goal-strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;padding:12px 14px}
+.goal-box{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px;text-align:center}
+.goal-num{font-size:22px;font-weight:500;color:var(--color-text-primary)}
+.goal-lbl{font-size:11px;color:var(--color-text-secondary);margin-top:2px}
+
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.leg{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--color-text-secondary)}
+.leg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+
+.month-summary{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-bottom:14px}
+.sum-card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 12px}
+.sum-val{font-size:18px;font-weight:500;color:var(--color-text-primary)}
+.sum-lbl{font-size:11px;color:var(--color-text-secondary);margin-top:2px}
+</style>
+
+<div class="month-nav">
+  <button class="m-btn active" onclick="showMonth(1,this)">Month 1<span class="sub">DSA + SD basics</span></button>
+  <button class="m-btn" onclick="showMonth(2,this)">Month 2<span class="sub">SD deep + Node</span></button>
+  <button class="m-btn" onclick="showMonth(3,this)">Month 3<span class="sub">NestJS + DevOps + jobs</span></button>
+</div>
+
+<div class="legend">
+  <div class="leg"><div class="leg-dot" style="background:#378ADD"></div>DSA</div>
+  <div class="leg"><div class="leg-dot" style="background:#639922"></div>System design</div>
+  <div class="leg"><div class="leg-dot" style="background:#BA7517"></div>Node / NestJS</div>
+  <div class="leg"><div class="leg-dot" style="background:#7F77DD"></div>Review / mock</div>
+</div>
+
+<!-- ===== MONTH 1 ===== -->
+<div id="month-1" class="month active">
+  <div class="month-summary">
+    <div class="sum-card"><div class="sum-val">60+</div><div class="sum-lbl">LeetCode problems</div></div>
+    <div class="sum-card"><div class="sum-val">4</div><div class="sum-lbl">SD designs done</div></div>
+    <div class="sum-card"><div class="sum-val">2</div><div class="sum-lbl">Node topics revised</div></div>
+    <div class="sum-card"><div class="sum-val">4</div><div class="sum-lbl">Mock interviews</div></div>
+  </div>
+
+  <!-- Week 1 -->
+  <div class="week-card open" id="w1">
+    <div class="week-head" onclick="tog('w1')">
+      <span class="week-badge" style="background:#E6F1FB;color:#0C447C">Week 1</span>
+      <span class="week-title">Arrays, strings & habit building</span>
+      <span class="week-focus">DSA only</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="week-body">
+      <div class="day-grid">
+        <div class="day-cell dsa"><div class="day-label">Mon</div><div class="day-task">Two Sum, Contains Duplicate</div></div>
+        <div class="day-cell dsa"><div class="day-label">Tue</div><div class="day-task">Best Time Stock I & II</div></div>
+        <div class="day-cell dsa"><div class="day-label">Wed</div><div class="day-task">Longest Substring No Repeat</div></div>
+        <div class="day-cell dsa"><div class="day-label">Thu</div><div class="day-task">Sliding window: Max window</div></div>
+        <div class="day-cell dsa"><div class="day-label">Fri</div><div class="day-task">Product except self, max subarray</div></div>
+        <div class="day-cell review"><div class="day-label">Sat</div><div class="day-task">Re-solve Week 1 problems faster</div></div>
+        <div class="day-cell rest"><div class="day-label">Sun</div><div class="day-task">Rest / light reading</div></div>
+      </div>
+      <div class="section-block">
+        <div class="block-label">This week targets</div>
+        <div class="task-list">
+          <div class="task-item"><div class="task-dot dot-dsa"></div>Solve 10 easy LeetCode problems — arrays and strings only</div>
+          <div class="task-item"><div class="task-dot dot-dsa"></div>Learn two-pointer pattern deeply (3Sum, Container With Most Water)</div>
+          <div class="task-item"><div class="task-dot dot-dsa"></div>Learn sliding window — fixed size and variable size variants</div>
+          <div class="task-item"><div class="task-dot dot-review"></div>Read NeetCode pattern guide for arrays before solving</div>
+        </div>
+      </div>
+      <div class="section-block">
+        <div class="block-label">Problems to solve</div>
+        <div class="problems-row">
+          <span class="prob-tag">Two Sum</span><span class="prob-tag">Best Time to Buy Stock</span><span class="prob-tag">Contains Duplicate</span><span class="prob-tag">Product of Array Except Self</span><span class="prob-tag">Maximum Subarray</span><span class="prob-tag">Longest Substring No Repeat</span><span class="prob-tag">3Sum</span><span class="prob-tag">Container With Most Water</span><span class="prob-tag">Trapping Rain Water</span><span class="prob-tag">Rotate Array</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Week 2 -->
+  <div class="week-card" id="w2">
+    <div class="week-head" onclick="tog('w2')">
+      <span class="week-badge" style="background:#E6F1FB;color:#0C447C">Week 2</span>
+      <span class="week-title">Linked lists, stacks & queues</span>
+      <span class="week-focus">DSA + SD intro</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="week-body">
+      <div class="day-grid">
+        <div class="day-cell dsa"><div class="day-label">Mon</div><div class="day-task">Reverse linked list (iter + recur)</div></div>
+        <div class="day-cell dsa"><div class="day-label">Tue</div><div class="day-task">Detect cycle, merge sorted lists</div></div>
+        <div class="day-cell dsa"><div class="day-label">Wed</div><div class="day-task">Valid parentheses, min stack</div></div>
+        <div class="day-cell sd"><div class="day-label">Thu</div><div class="day-task">Read: scalability 101, load balancers</div></div>
+        <div class="day-cell dsa"><div class="day-label">Fri</div><div class="day-task">LRU Cache (do not skip this)</div></div>
+        <div class="day-cell sd"><div class="day-label">Sat</div><div class="day-task">Design URL shortener out loud</div></div>
+        <div class="day-cell rest"><div class="day-label">Sun</div><div class="day-task">Rest</div></div>
+      </div>
+      <div class="section-block">
+        <div class="block-label">This week targets</div>
+        <div class="task-list">
+          <div class="task-item"><div class="task-dot dot-dsa"></div>Implement LRU Cache from scratch using doubly linked list + hash map</div>
+          <div class="task-item"><div class="task-dot dot-dsa"></div>Understand Floyd's cycle detection — tortoise and hare</div>
+          <div class="task-item"><div class="task-dot dot-sd"></div>Read System Design Primer: introduction + scalability section</div>
+          <div class="task-item"><div class="task-dot dot-sd"></div>Design URL shortener — base62, collision handling, read-heavy system</div>
+        </div>
+      </div>
+      <div class="section-block">
+        <div class="block-label">Problems to solve</div>
+        <div class="problems-row">
+          <span class="prob-tag">Reverse Linked List</span><span class="prob-tag">Detect Cycle</span><span class="prob-tag">Merge Two Sorted Lists</span><span class="prob-tag">Remove Nth from End</span><span class="prob-tag">Reorder List</span><span class="prob-tag">Valid Parentheses</span><span class="prob-tag">Min Stack</span><span class="prob-tag">Daily Temperatures</span><span class="prob-tag">LRU Cache</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Week 3 -->
+  <div class="week-card" id="w3">
+    <div class="week-head" onclick="tog('w3')">
+      <span class="week-badge" style="background:#E6F1FB;color:#0C447C">Week 3</span>
+      <span class="week-title">Trees — BFS, DFS, BST</span>
+      <span class="week-focus">DSA + SD caching</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="week-body">
+      <div class="day-grid">
+        <div class="day-cell dsa"><div class="day-label">Mon</div><div class="day-task">Inorder, preorder, postorder</div></div>
+        <div class="day-cell dsa"><div class="day-label">Tue</div><div class="day-task">Level order BFS, right side view</div></div>
+        <div class="day-cell dsa"><div class="day-label">Wed</div><div class="day-task">Validate BST, LCA of BST</div></div>
+        <div class="day-cell sd"><div class="day-label">Thu</div><div class="day-task">Caching — Redis patterns, cache-aside</div></div>
+        <div class="day-cell dsa"><div class="day-label">Fri</div><div class="day-task">Max path sum, diameter of tree</div></div>
+        <div class="day-cell sd"><div class="day-label">Sat</div><div class="day-task">Design rate limiter (3 algorithms)</div></div>
+        <div class="day-cell rest"><div class="day-label">Sun</div><div class="day-task">Rest</div></div>
+      </div>
+      <div class="section-block">
+        <div class="block-label">This week targets</div>
+        <div class="task-list">
+          <div class="task-item"><div class="task-dot dot-dsa"></div>Master BFS with a queue — works for trees AND graphs (same code structure)</div>
+          <div class="task-item"><div class="task-dot dot-dsa"></div>Understand when recursive DFS is cleaner than iterative</div>
+          <div class="task-item"><div class="task-dot dot-sd"></div>Learn Redis: cache-aside, write-through, TTL, eviction policies (LRU/LFU)</div>
+          <div class="task-item"><div class="task-dot dot-sd"></div>Design a rate limiter — token bucket, fixed window, sliding window log</div>
+        </div>
+      </div>
+      <div class="section-block">
+        <div class="block-label">Problems to solve</div>
+        <div class="problems-row">
+          <span class="prob-tag">Binary Tree Level Order</span><span class="prob-tag">Max Depth of BT</span><span class="prob-tag">Invert Binary Tree</span><span class="prob-tag">Validate BST</span><span class="prob-tag">Lowest Common Ancestor</span><span class="prob-tag">Binary Tree Max Path Sum</span><span class="prob-tag">Serialize/Deserialize BT</span><span class="prob-tag">Diameter of BT</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Week 4 -->
+  <div class="week-card" id="w4">
+    <div class="week-head" onclick="tog('w4')">
+      <span class="week-badge" style="background:#EEEDFE;color:#3C3489">Week 4</span>
+      <span class="week-title">Graphs + Month 1 review</span>
+      <span class="week-focus">DSA + first mock</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="week-body">
+      <div class="day-grid">
+        <div class="day-cell dsa"><div class="day-label">Mon</div><div class="day-task">Number of islands (BFS)</div></div>
+        <div class="day-cell dsa"><div class="day-label">Tue</div><div class="day-task">Course schedule (topo sort)</div></div>
+        <div class="day-cell dsa"><div class="day-label">Wed</div><div class="day-task">Clone graph, pacific atlantic</div></div>
+        <div class="day-cell review"><div class="day-label">Thu</div><div class="day-task">Mock interview #1 — 2 DSA problems timed</div></div>
+        <div class="day-cell dsa"><div class="day-label">Fri</div><div class="day-task">Word Ladder (BFS shortest path)</div></div>
+        <div class="day-cell review"><div class="day-label">Sat</div><div class="day-task">Weak areas from month 1 — re-solve</div></div>
+        <div class="day-cell rest"><div class="day-label">Sun</div><div class="day-task">Rest</div></div>
+      </div>
+      <div class="section-block">
+        <div class="block-label">This week targets</div>
+        <div class="task-list">
+          <div class="task-item"><div class="task-dot dot-dsa"></div>Graphs — represent as adjacency list, know BFS and DFS for graphs</div>
+          <div class="task-item"><div class="task-dot dot-dsa"></div>Topological sort — Kahn's algorithm (BFS) and DFS-based</div>
+          <div class="task-item"><div class="task-dot dot-review"></div>Do a timed mock interview — 45 min, 2 medium problems, explain out loud</div>
+          <div class="task-item"><div class="task-dot dot-review"></div>Review Month 1: you should have 60+ problems solved</div>
+        </div>
+      </div>
+      <div class="section-block">
+        <div class="block-label">Problems to solve</div>
+        <div class="problems-row">
+          <span class="prob-tag">Number of Islands</span><span class="prob-tag">Course Schedule I & II</span><span class="prob-tag">Clone Graph</span><span class="prob-tag">Pacific Atlantic Water Flow</span><span class="prob-tag">Word Ladder</span><span class="prob-tag">Rotting Oranges</span><span class="prob-tag">Walls and Gates</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MONTH 2 ===== -->
+<div id="month-2" class="month">
+  <div class="month-summary">
+    <div class="sum-card"><div class="sum-val">50+</div><div class="sum-lbl">More problems (130 total)</div></div>
+    <div class="sum-card"><div class="sum-val">6</div><div class="sum-lbl">SD designs done</div></div>
+    <div class="sum-card"><div class="sum-val">4</div><div class="sum-lbl">Node deep dives</div></div>
+    <div class="sum-card"><div class="sum-val">4</div><div class="sum-lbl">Mock interviews</div></div>
+  </div>
+
+  <!-- Week 5 -->
+  <div class="week-card open" id="w5">
+    <div class="week-head" onclick="tog('w5')">
+      <span class="week-badge" style="background:#EAF3DE;color:#27500A">Week 5</span>
+      <span class="week-title">Dynamic programming — memoization first</span>
+      <span class="week-focus">DSA + SD databases</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="week-body">
+      <div class="day-grid">
+        <div class="day-cell dsa"><div class="day-label">Mon</div><div class="day-task">Climbing stairs, house robber</div></div>
+        <div class="day-cell dsa"><div class="day-label">Tue</div><div class="day-task">Coin change, min cost climbing</div></div>
+        <div class="day-cell sd"><div class="day-label">Wed</div><div class="day-task">DB sharding, replication, indexing</div></div>
+        <div class="day-cell dsa"><div class="day-label">Thu</div><div class="day-task">Knapsack 0/1 — memoization</div></div>
+        <div class="day-cell node"><div class="day-label">Fri</div><div class="day-task">Node.js event loop — all 6 phases</div></div>
+        <div class="day-cell sd"><div class="day-label">Sat</div><div class="day-task">Design: Pastebin / notification system</div></div>
+        <div class="day-cell rest"><div class="day-label">Sun</div><div class="day-task">Rest</div></div>
+      </div>
+      <div class="section-block">
+        <div class="block-label">This week targets</div>
+        <div class="task-list">
+          <div class="task-item"><div class="task-dot dot-dsa"></div>Start DP with memoization (top-down) — understand recursion tree first</div>
+          <div class="task-item"><div class="task-dot dot-dsa"></div>Master knapsack — all DP patterns are variations of this</div>
+          <div class="task-item"><div class="task-dot dot-sd"></div>Study database scaling: horizontal sharding, read replicas, index types</div>
+          <div class="task-item"><div class="task-dot dot-node"></div>Study Node.js event loop deeply — phases: timers, I/O, poll, check, close</div>
+        </div>
+      </div>
+      <div class="section-block">
+        <div class="block-label">Problems to solve</div>
+        <div class="problems-row">
+          <span class="prob-tag">Climbing Stairs</span><span class="prob-tag">House Robber I & II</span><span class="prob-tag">Coin Change</span><span class="prob-tag">0/1 Knapsack</span><span class="prob-tag">Unique Paths</span><span class="prob-tag">Jump Game I & II</span><span class="prob-tag">Word Break</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Week 6 -->
+  <div class="week-card" id="w6">
+    <div class="week-head" onclick="tog('w6')">
+      <span class="week-badge" style="background:#EAF3DE;color:#27500A">Week 6</span>
+      <span class="week-title">DP 2D + Heaps + system design deep</span>
+      <span class="week-focus">DSA + SD + Node</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="week-body">
+      <div class="day-grid">
+        <div class="day-cell dsa"><div class="day-label">Mon</div><div class="day-task">LCS, edit distance</div></div>
+        <div class="day-cell dsa"><div class="day-label">Tue</div><div class="day-task">Find Median from Data Stream</div></div>
+        <div class="day-cell node"><div class="day-label">Wed</div><div class="day-task">Streams, backpressure, Worker Threads</div></div>
+        <div class="day-cell dsa"><div class="day-label">Thu</div><div class="day-task">Merge K sorted lists, top K elements</div></div>
+        <div class="day-cell sd"><div class="day-label">Fri</div><div class="day-task">Kafka / message queue patterns</div></div>
+        <div class="day-cell review"><div class="day-label">Sat</div><div class="day-task">Mock interview #2 — 1 DSA + 1 SD</div></div>
+        <div class="day-cell rest"><div class="day-label">Sun</div><div class="day-task">Rest</div></div>
+      </div>
+      <div class="section-block">
+        <div class="block-label">This week targets</div>
+        <div class="task-list">
+          <div class="task-item"><div class="task-dot dot-dsa"></div>2D DP — LCS and Edit Distance using tabulation tables (draw the table)</div>
+          <div class="task-item"><div class="task-dot dot-dsa"></div>Heaps — min heap, max heap, two-heap trick for median</div>
+          <div class="task-item"><div class="task-dot dot-node"></div>Node.js streams — Readable, Writable, Transform, Duplex. Implement a file pipeline.</div>
+          <div class="task-item"><div class="task-dot dot-sd"></div>Kafka: topics, partitions, consumer groups, at-least-once vs exactly-once delivery</div>
+        </div>
+      </div>
+      <div class="section-block">
+        <div class="block-label">Problems to solve</div>
+        <div class="problems-row">
+          <span class="prob-tag">Longest Common Subsequence</span><span class="prob-tag">Edit Distance</span><span class="prob-tag">Longest Increasing Subsequence</span><span class="prob-tag">Partition Equal Subset Sum</span><span class="prob-tag">Find Median from Data Stream</span><span class="prob-tag">Merge K Sorted Lists</span><span class="prob-tag">Top K Frequent Elements</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Week 7 -->
+  <div class="week-card" id="w7">
+    <div class="week-head" onclick="tog('w7')">
+      <span class="week-badge" style="background:#EAF3DE;color:#27500A">Week 7</span>
+      <span class="week-title">Binary search + backtracking + NestJS deep</span>
+      <span class="week-focus">DSA + NestJS</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="week-body">
+      <div class="day-grid">
+        <div class="day-cell dsa"><div class="day-label">Mon</div><div class="day-task">Binary search variants</div></div>
+        <div class="day-cell node"><div class="day-label">Tue</div><div class="day-task">NestJS request lifecycle deep</div></div>
+        <div class="day-cell dsa"><div class="day-label">Wed</div><div class="day-task">Subsets, permutations</div></div>
+        <div class="day-cell node"><div class="day-label">Thu</div><div class="day-task">Custom guards, interceptors, pipes</div></div>
+        <div class="day-cell dsa"><div class="day-label">Fri</div><div class="day-task">N-Queens, combination sum</div></div>
+        <div class="day-cell sd"><div class="day-label">Sat</div><div class="day-task">Design Twitter feed / Swiggy backend</div></div>
+        <div class="day-cell rest"><div class="day-label">Sun</div><div class="day-task">Rest</div></div>
+      </div>
+      <div class="section-block">
+        <div class="block-label">This week targets</div>
+        <div class="task-list">
+          <div class="task-item"><div class="task-dot dot-dsa"></div>Binary search — not just sorted arrays. Rotated array, find minimum, search in 2D matrix.</div>
+          <div class="task-item"><div class="task-dot dot-dsa"></div>Backtracking template — make choice, recurse, undo choice. Works for all backtracking.</div>
+          <div class="task-item"><div class="task-dot dot-node"></div>NestJS: implement custom decorator + interceptor that logs execution time</div>
+          <div class="task-item"><div class="task-dot dot-node"></div>Understand dependency injection — how NestJS IoC container resolves providers</div>
+        </div>
+      </div>
+      <div class="section-block">
+        <div class="block-label">Problems to solve</div>
+        <div class="problems-row">
+          <span class="prob-tag">Binary Search</span><span class="prob-tag">Search Rotated Sorted Array</span><span class="prob-tag">Find Min in Rotated Array</span><span class="prob-tag">Koko Eating Bananas</span><span class="prob-tag">Subsets I & II</span><span class="prob-tag">Permutations</span><span class="prob-tag">Combination Sum</span><span class="prob-tag">N-Queens</span><span class="prob-tag">Word Search</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Week 8 -->
+  <div class="week-card" id="w8">
+    <div class="week-head" onclick="tog('w8')">
+      <span class="week-badge" style="background:#EEEDFE;color:#3C3489">Week 8</span>
+      <span class="week-title">PostgreSQL mastery + mock interviews</span>
+      <span class="week-focus">DB + review</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="week-body">
+      <div class="day-grid">
+        <div class="day-cell node"><div class="day-label">Mon</div><div class="day-task">PostgreSQL: indexes, EXPLAIN ANALYZE</div></div>
+        <div class="day-cell node"><div class="day-label">Tue</div><div class="day-task">Window functions, CTEs, N+1 fix</div></div>
+        <div class="day-cell dsa"><div class="day-label">Wed</div><div class="day-task">Revisit weak DSA topics</div></div>
+        <div class="day-cell review"><div class="day-label">Thu</div><div class="day-task">Mock interview #3 — full loop</div></div>
+        <div class="day-cell node"><div class="day-label">Fri</div><div class="day-task">TypeScript generics + mapped types</div></div>
+        <div class="day-cell review"><div class="day-label">Sat</div><div class="day-task">Mock interview #4 — SD design</div></div>
+        <div class="day-cell rest"><div class="day-label">Sun</div><div class="day-task">Rest</div></div>
+      </div>
+      <div class="section-block">
+        <div class="block-label">This week targets</div>
+        <div class="task-list">
+          <div class="task-item"><div class="task-dot dot-node"></div>PostgreSQL: run EXPLAIN ANALYZE on your own app queries, fix slow ones</div>
+          <div class="task-item"><div class="task-dot dot-node"></div>Know window functions: ROW_NUMBER, RANK, LAG, LEAD, PARTITION BY</div>
+          <div class="task-item"><div class="task-dot dot-node"></div>TypeScript: write a generic Repository<T>, use conditional types and infer</div>
+          <div class="task-item"><div class="task-dot dot-review"></div>Full mock interview — DSA round + system design round back to back</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MONTH 3 ===== -->
+<div id="month-3" class="month">
+  <div class="month-summary">
+    <div class="sum-card"><div class="sum-val">30+</div><div class="sum-lbl">Hard problems (160 total)</div></div>
+    <div class="sum-card"><div class="sum-val">1</div><div class="sum-lbl">Portfolio project live</div></div>
+    <div class="sum-card"><div class="sum-val">20+</div><div class="sum-lbl">Applications sent</div></div>
+    <div class="sum-card"><div class="sum-val">6+</div><div class="sum-lbl">Mock interviews done</div></div>
+  </div>
+
+  <!-- Week 9 -->
+  <div class="week-card open" id="w9">
+    <div class="week-head" onclick="tog('w9')">
+      <span class="week-badge" style="background:#FAEEDA;color:#633806">Week 9</span>
+      <span class="week-title">NestJS microservices + auth + portfolio start</span>
+      <span class="week-focus">NestJS + DevOps</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="week-body">
+      <div class="day-grid">
+        <div class="day-cell node"><div class="day-label">Mon</div><div class="day-task">NestJS + Kafka microservice setup</div></div>
+        <div class="day-cell node"><div class="day-label">Tue</div><div class="day-task">JWT refresh token rotation</div></div>
+        <div class="day-cell node"><div class="day-label">Wed</div><div class="day-task">OAuth2 flow, Passport strategies</div></div>
+        <div class="day-cell node"><div class="day-label">Thu</div><div class="day-task">Portfolio: scaffold NestJS + Postgres</div></div>
+        <div class="day-cell dsa"><div class="day-label">Fri</div><div class="day-task">2–3 hard LeetCode — keep sharp</div></div>
+        <div class="day-cell node"><div class="day-label">Sat</div><div class="day-task">Portfolio: add Redis caching layer</div></div>
+        <div class="day-cell rest"><div class="day-label">Sun</div><div class="day-task">Rest</div></div>
+      </div>
+      <div class="section-block">
+        <div class="block-label">This week targets</div>
+        <div class="task-list">
+          <div class="task-item"><div class="task-dot dot-node"></div>Set up NestJS microservice with Kafka transport — producer and consumer</div>
+          <div class="task-item"><div class="task-dot dot-node"></div>Implement JWT + refresh token rotation with Redis token blacklist</div>
+          <div class="task-item"><div class="task-dot dot-node"></div>Start portfolio project: NestJS + PostgreSQL + Redis + Kafka scaffold</div>
+          <div class="task-item"><div class="task-dot dot-dsa"></div>Do 2–3 hard problems — maintain the muscle, don't lose DSA now</div>
+        </div>
+      </div>
+      <div class="section-block">
+        <div class="block-label">Portfolio project idea (pick one)</div>
+        <div class="problems-row">
+          <span class="prob-tag">E-commerce API (orders, products, payments)</span>
+          <span class="prob-tag">Food delivery backend (restaurants, riders, orders)</span>
+          <span class="prob-tag">Notification service platform</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Week 10 -->
+  <div class="week-card" id="w10">
+    <div class="week-head" onclick="tog('w10')">
+      <span class="week-badge" style="background:#FAEEDA;color:#633806">Week 10</span>
+      <span class="week-title">Docker + CI/CD + portfolio core features</span>
+      <span class="week-focus">DevOps + portfolio</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="week-body">
+      <div class="day-grid">
+        <div class="day-cell node"><div class="day-label">Mon</div><div class="day-task">Dockerize NestJS app (multi-stage)</div></div>
+        <div class="day-cell node"><div class="day-label">Tue</div><div class="day-task">docker-compose: app+postgres+redis+kafka</div></div>
+        <div class="day-cell node"><div class="day-label">Wed</div><div class="day-task">Portfolio: core business logic</div></div>
+        <div class="day-cell node"><div class="day-label">Thu</div><div class="day-task">GitHub Actions: test + lint + build</div></div>
+        <div class="day-cell dsa"><div class="day-label">Fri</div><div class="day-task">2 medium problems — keep habit</div></div>
+        <div class="day-cell node"><div class="day-label">Sat</div><div class="day-task">Portfolio: tests + Swagger docs</div></div>
+        <div class="day-cell rest"><div class="day-label">Sun</div><div class="day-task">Rest</div></div>
+      </div>
+      <div class="section-block">
+        <div class="block-label">This week targets</div>
+        <div class="task-list">
+          <div class="task-item"><div class="task-dot dot-node"></div>Write a multi-stage Dockerfile — builder stage + production stage (smaller image)</div>
+          <div class="task-item"><div class="task-dot dot-node"></div>docker-compose with: NestJS app, PostgreSQL, Redis, Kafka, Zookeeper</div>
+          <div class="task-item"><div class="task-dot dot-node"></div>GitHub Actions: on push → run tests → build docker image → push to registry</div>
+          <div class="task-item"><div class="task-dot dot-node"></div>Portfolio: add unit tests (80% coverage), Swagger/OpenAPI documentation</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Week 11 -->
+  <div class="week-card" id="w11">
+    <div class="week-head" onclick="tog('w11')">
+      <span class="week-badge" style="background:#FAEEDA;color:#633806">Week 11</span>
+      <span class="week-title">Portfolio finish + LinkedIn + start applying</span>
+      <span class="week-focus">Job hunt begins</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="week-body">
+      <div class="day-grid">
+        <div class="day-cell node"><div class="day-label">Mon</div><div class="day-task">Deploy to AWS EC2 or Railway</div></div>
+        <div class="day-cell review"><div class="day-label">Tue</div><div class="day-task">Write README + architecture diagram</div></div>
+        <div class="day-cell review"><div class="day-label">Wed</div><div class="day-task">Update LinkedIn + Naukri + GitHub</div></div>
+        <div class="day-cell review"><div class="day-label">Thu</div><div class="day-task">Prepare 8 STAR stories with metrics</div></div>
+        <div class="day-cell review"><div class="day-label">Fri</div><div class="day-task">Apply to 10 companies (tier 2 first)</div></div>
+        <div class="day-cell dsa"><div class="day-label">Sat</div><div class="day-task">Mock interview #5 — full loop</div></div>
+        <div class="day-cell rest"><div class="day-label">Sun</div><div class="day-task">Rest</div></div>
+      </div>
+      <div class="section-block">
+        <div class="block-label">This week targets</div>
+        <div class="task-list">
+          <div class="task-item"><div class="task-dot dot-review"></div>Deploy portfolio project — it must be live with a URL, not just local</div>
+          <div class="task-item"><div class="task-dot dot-review"></div>Write a killer README: what it does, architecture diagram, how to run, tech choices</div>
+          <div class="task-item"><div class="task-dot dot-review"></div>LinkedIn: add portfolio link, set open-to-work, update skills to include NestJS, Kafka, Redis</div>
+          <div class="task-item"><div class="task-dot dot-review"></div>Apply to 10 companies — start with Tier 2/3 to get interview reps before Tier 1</div>
+        </div>
+      </div>
+      <div class="section-block">
+        <div class="block-label">STAR story topics to prepare</div>
+        <div class="problems-row">
+          <span class="prob-tag">Performance improvement you made</span>
+          <span class="prob-tag">Production incident you handled</span>
+          <span class="prob-tag">Complex feature you designed</span>
+          <span class="prob-tag">Tech decision you disagreed with</span>
+          <span class="prob-tag">Something you learned quickly</span>
+          <span class="prob-tag">Time you pushed back on scope</span>
+          <span class="prob-tag">Mentoring/helping a teammate</span>
+          <span class="prob-tag">Project that failed or was delayed</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Week 12 -->
+  <div class="week-card" id="w12">
+    <div class="week-head" onclick="tog('w12')">
+      <span class="week-badge" style="background:#EEEDFE;color:#3C3489">Week 12</span>
+      <span class="week-title">Full interview prep + aggressive applying</span>
+      <span class="week-focus">Execution week</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="week-body">
+      <div class="day-grid">
+        <div class="day-cell review"><div class="day-label">Mon</div><div class="day-task">Revisit all SD concepts — rapid review</div></div>
+        <div class="day-cell dsa"><div class="day-label">Tue</div><div class="day-task">3 medium problems — stay sharp</div></div>
+        <div class="day-cell review"><div class="day-label">Wed</div><div class="day-task">Mock interview #6 — DSA + NestJS</div></div>
+        <div class="day-cell review"><div class="day-label">Thu</div><div class="day-task">Apply 10 more companies (tier 1 now)</div></div>
+        <div class="day-cell review"><div class="day-label">Fri</div><div class="day-task">Mock interview #7 — System design</div></div>
+        <div class="day-cell review"><div class="day-label">Sat</div><div class="day-task">Follow up on applications + referrals</div></div>
+        <div class="day-cell rest"><div class="day-label">Sun</div><div class="day-task">Rest — you've earned it</div></div>
+      </div>
+      <div class="section-block">
+        <div class="block-label">End of Month 3 — you should have</div>
+        <div class="task-list">
+          <div class="task-item"><div class="task-dot dot-dsa"></div>160+ LeetCode problems solved across all patterns</div>
+          <div class="task-item"><div class="task-dot dot-sd"></div>10+ system design problems practiced out loud</div>
+          <div class="task-item"><div class="task-dot dot-node"></div>1 portfolio project live on GitHub + deployed with CI/CD</div>
+          <div class="task-item"><div class="task-dot dot-review"></div>20+ job applications sent, 7+ mock interviews done</div>
+          <div class="task-item"><div class="task-dot dot-review"></div>8 STAR stories prepared with real metrics from your current job</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showMonth(n, btn){
+  document.querySelectorAll('.month').forEach(m=>m.classList.remove('active'));
+  document.querySelectorAll('.m-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('month-'+n).classList.add('active');
+  btn.classList.add('active');
+}
+function tog(id){
+  document.getElementById(id).classList.toggle('open');
+}
+</script>
